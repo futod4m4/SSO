@@ -1,0 +1,9 @@
+version: "3"
+
+tasks:
+    migrate:
+      aliases:
+        - mig
+      desc: "Migrate databases"
+      cmds:
+        - go run ./cmd/migrator --db-name=sso_for_app --migrations-path=./migrations --db-query=?sslmode=disable --db-username=fedor

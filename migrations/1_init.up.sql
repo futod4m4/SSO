@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS users
+(
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+    pass_hash bytea NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_email on users(email);
+
+
+CREATE TABLE IF NOT EXISTS apps
+(
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    secret TEXT NOT NULL UNIQUE
+);

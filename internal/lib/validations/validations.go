@@ -1,6 +1,7 @@
 package validations
 
 import (
+	ssov1 "github.com/futod4m4/protos/gen/go/sso"
 	"github.com/go-playground/validator/v10"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -8,8 +9,24 @@ import (
 
 // Login Handler validations
 
-// ValidateLoginEmail validates if email is correct
-func ValidateLoginEmail(email string, validate *validator.Validate) error {
+func ValidateLogin(req *ssov1.LoginRequest, validate *validator.Validate) error {
+	if err := validateLoginEmail(req.GetEmail(), validate); err != nil {
+		return err
+	}
+
+	if err := validateLoginPassword(req.GetPassword(), validate); err != nil {
+		return err
+	}
+
+	if err := validateLoginAppId(req.GetAppId(), validate); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateLoginEmail validates if email is correct
+func validateLoginEmail(email string, validate *validator.Validate) error {
 
 	if err := validate.Var(email, "email"); err != nil {
 		return status.Error(codes.InvalidArgument, "incorrect email")
@@ -22,8 +39,8 @@ func ValidateLoginEmail(email string, validate *validator.Validate) error {
 	return nil
 }
 
-// ValidateLoginPassword validates if password is not empty and not too easy
-func ValidateLoginPassword(password string, validate *validator.Validate) error {
+// validateLoginPassword validates if password is not empty and not too easy
+func validateLoginPassword(password string, validate *validator.Validate) error {
 
 	if err := validate.Var(password, "required"); err != nil {
 		return status.Error(codes.InvalidArgument, "password is required")
@@ -32,8 +49,8 @@ func ValidateLoginPassword(password string, validate *validator.Validate) error 
 	return nil
 }
 
-// ValidateLoginAppId validates is app_id is not 0
-func ValidateLoginAppId(appId int32, validate *validator.Validate) error {
+// validateLoginAppId validates is app_id is not 0
+func validateLoginAppId(appId int32, validate *validator.Validate) error {
 
 	if err := validate.Var(appId, "ne=0"); err != nil {
 		return status.Error(codes.InvalidArgument, "incorrect app_id")
@@ -44,8 +61,21 @@ func ValidateLoginAppId(appId int32, validate *validator.Validate) error {
 
 // Register Handler validations
 
-// ValidateRegisterEmail validates if email is correct
-func ValidateRegisterEmail(email string, validate *validator.Validate) error {
+// ValidateRegister validates register Handler
+func ValidateRegister(req *ssov1.RegisterRequest, validate *validator.Validate) error {
+	if err := validateRegisterEmail(req.GetEmail(), validate); err != nil {
+		return err
+	}
+
+	if err := validateRegisterPassword(req.GetPassword(), validate); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateRegisterEmail validates if email is correct
+func validateRegisterEmail(email string, validate *validator.Validate) error {
 
 	if err := validate.Var(email, "email"); err != nil {
 		return status.Error(codes.InvalidArgument, "incorrect email")
@@ -58,8 +88,8 @@ func ValidateRegisterEmail(email string, validate *validator.Validate) error {
 	return nil
 }
 
-// ValidateRegisterPassword validates if password is not empty and not too easy
-func ValidateRegisterPassword(password string, validate *validator.Validate) error {
+// validateRegisterPassword validates if password is not empty and not too easy
+func validateRegisterPassword(password string, validate *validator.Validate) error {
 	if err := validate.Var(password, "lt=6"); err != nil {
 		return status.Error(codes.InvalidArgument, "password is too short")
 	}
