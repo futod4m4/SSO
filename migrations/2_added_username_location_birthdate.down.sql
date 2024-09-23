@@ -1,0 +1,5 @@
+ALTER TABLE users
+    DROP COLUMN IF EXISTS sex,
+    DROP COLUMN IF EXISTS birth_date,
+    DROP COLUMN IF EXISTS location,
+    DROP COLUMN IF EXISTS username;

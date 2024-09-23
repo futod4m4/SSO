@@ -7,3 +7,15 @@ tasks:
       desc: "Migrate databases"
       cmds:
         - go run ./cmd/migrator --db-name=sso_for_app --migrations-path=./migrations --db-query=?sslmode=disable --db-username=fedor
+    testmigrate:
+      aliases:
+        - mig
+      desc: "test migrate databases"
+      cmds:
+        - go run ./cmd/migrator --db-name=sso_for_app --migrations-path=./tests/migrations --db-query="?sslmode=disable&x-migrations-table=migrations_test" --db-username=fedor
+    default:
+      aliases:
+        - serv
+      desc: "starting server"
+      cmds:
+        - go run cmd/sso/main.go --config=./config/local.yaml

@@ -71,6 +71,14 @@ func ValidateRegister(req *ssov1.RegisterRequest, validate *validator.Validate) 
 		return err
 	}
 
+	if err := validateRegisterSex(req.GetSex(), validate); err != nil {
+		return err
+	}
+
+	if err := validateRegisterUsername(req.GetUsername(), validate); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -90,17 +98,30 @@ func validateRegisterEmail(email string, validate *validator.Validate) error {
 
 // validateRegisterPassword validates if password is not empty and not too easy
 func validateRegisterPassword(password string, validate *validator.Validate) error {
-	if err := validate.Var(password, "lt=6"); err != nil {
+	if err := validate.Var(password, "gt=6"); err != nil {
 		return status.Error(codes.InvalidArgument, "password is too short")
-	}
-
-	//Password should contain uppercase and lowercase letters and symbols
-	if err := validate.Var(password, "excludesall=!@#?,lowercase|uppercase"); err != nil {
-		return status.Error(codes.InvalidArgument, "password is too easy")
 	}
 
 	if err := validate.Var(password, "required"); err != nil {
 		return status.Error(codes.InvalidArgument, "password is required")
+	}
+
+	return nil
+}
+
+// validateRegisterUsername validates if username is shorter than 20 and doesn't contain spaces
+func validateRegisterUsername(username string, validate *validator.Validate) error {
+	if err := validate.Var(username, "lt=20,excludes= "); err != nil {
+		return status.Error(codes.InvalidArgument, "username shouldn't contain spaces")
+	}
+
+	return nil
+}
+
+// validateRegisterSex validates if user sex is correct
+func validateRegisterSex(sex string, validate *validator.Validate) error {
+	if err := validate.Var(sex, "contains=Male|contains=Female|contains=Another|contains=undefined"); err != nil {
+		return status.Error(codes.InvalidArgument, "sex can be [Female, Male, Another or undefined]")
 	}
 
 	return nil

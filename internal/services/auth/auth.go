@@ -25,6 +25,10 @@ type UserSaver interface {
 		ctx context.Context,
 		email string,
 		passHash []byte,
+		username,
+		sex,
+		location,
+		dateOfBirth string,
 	) (uid int64, err error)
 }
 
@@ -40,7 +44,8 @@ type AppProvider interface {
 var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidAppID       = errors.New("invalid app_id")
-	ErrUserExists         = errors.New("this user is already exists")
+	ErrUserExists         = errors.New("user already exists")
+	ErrUserNotFound       = errors.New("user not found")
 )
 
 // New returns a new instance of Auth service.
@@ -120,8 +125,12 @@ func (a *Auth) Login(
 // If user doesn't exist, returns error
 func (a *Auth) RegisterNewUser(
 	ctx context.Context,
-	email string,
-	password string,
+	email,
+	password,
+	username,
+	sex,
+	location,
+	dateOfBirth string,
 ) (int64, error) {
 	const op = "auth.RegisterNewUser"
 
@@ -138,11 +147,11 @@ func (a *Auth) RegisterNewUser(
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	id, err := a.usrSaver.SaveUser(ctx, email, passHash)
+	id, err := a.usrSaver.SaveUser(ctx, email, passHash, username, sex, location, dateOfBirth)
 	if err != nil {
 		log.Error("failed to save user", slog.StringValue(err.Error()))
 		if errors.Is(err, storage.ErrUserExists) {
-			log.Warn("user is already exists", slog.StringValue(err.Error()))
+			log.Warn("user already exists", slog.StringValue(err.Error()))
 
 			return 0, fmt.Errorf("%s: %w", op, ErrUserExists)
 		}

@@ -1,5 +1,5 @@
 env : "local" # dev, prod
-storage_path: "./storage/sso.db"
+storage_path: "postgres://fedor:your_password@localhost:5432/sso_for_app?sslmode=disable"
 token_ttl: 1h
 grpc:
   port: 44044

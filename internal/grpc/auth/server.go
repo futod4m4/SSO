@@ -3,7 +3,6 @@ package auth
 import (
 	"SSO/internal/lib/validations"
 	"SSO/internal/services/auth"
-	"SSO/internal/storage"
 	"context"
 	"errors"
 	ssov1 "github.com/futod4m4/protos/gen/go/sso"
@@ -29,6 +28,10 @@ type Auth interface {
 		ctx context.Context,
 		email string,
 		password string,
+		username string,
+		sex string,
+		location string,
+		dateOfBirth string,
 	) (userID int64, err error)
 	IsAdmin(ctx context.Context, userID int64) (bool, error)
 }
@@ -72,9 +75,9 @@ func (s *serverAPI) Register(
 		return nil, err
 	}
 
-	userID, err := s.auth.RegisterNewUser(ctx, req.GetEmail(), req.GetPassword())
+	userID, err := s.auth.RegisterNewUser(ctx, req.GetEmail(), req.GetPassword(), req.GetUsername(), req.GetSex(), req.GetLocation(), req.GetDateOfBirth())
 	if err != nil {
-		if errors.Is(err, storage.ErrUserExists) {
+		if errors.Is(err, auth.ErrUserExists) {
 			return nil, status.Error(codes.AlreadyExists, "user already exists")
 		}
 
@@ -97,7 +100,7 @@ func (s *serverAPI) IsAdmin(
 
 	isAdmin, err := s.auth.IsAdmin(ctx, req.UserId)
 	if err != nil {
-		if errors.Is(err, storage.ErrAppNotFound) {
+		if errors.Is(err, auth.ErrUserNotFound) {
 			return nil, status.Error(codes.NotFound, "user not found")
 		}
 
