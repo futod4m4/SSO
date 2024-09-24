@@ -138,3 +138,17 @@ func ValidateIsAdmin(userId int64, validate *validator.Validate) error {
 
 	return nil
 }
+
+// ValidateIsUserExists validates if email is correct
+func ValidateIsUserExists(email string, validate *validator.Validate) error {
+
+	if err := validate.Var(email, "email"); err != nil {
+		return status.Error(codes.InvalidArgument, "incorrect email")
+	}
+
+	if err := validate.Var(email, "required"); err != nil {
+		return status.Error(codes.InvalidArgument, "email is required")
+	}
+
+	return nil
+}

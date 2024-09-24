@@ -35,6 +35,7 @@ type UserSaver interface {
 type UserProvider interface {
 	User(ctx context.Context, email string) (models.User, error)
 	IsAdmin(ctx context.Context, userID int64) (bool, error)
+	IsExists(ctx context.Context, email string) (bool, error)
 }
 
 type AppProvider interface {
@@ -192,4 +193,31 @@ func (a *Auth) IsAdmin(
 	log.Info("checked if user is admin", slog.Bool("is_admin", isAdmin))
 
 	return isAdmin, err
+}
+
+func (a *Auth) IsUserExists(
+	ctx context.Context,
+	email string,
+) (bool, error) {
+	const op = "Auth.IsUserExists"
+
+	log := a.log.With(
+		slog.String("op", op),
+		slog.String("user_email", email),
+	)
+
+	log.Info("checking if user exists")
+
+	isExists, err := a.usrProvider.IsExists(ctx, email)
+	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			log.Info("user not found", slog.StringValue(err.Error()))
+
+			return isExists, err
+		}
+
+		return true, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return isExists, err
 }

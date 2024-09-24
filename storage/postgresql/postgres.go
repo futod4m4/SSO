@@ -101,6 +101,27 @@ func (s *Storage) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 	return true, nil
 }
 
+func (s *Storage) IsExists(ctx context.Context, email string) (bool, error) {
+	const op = "storage.postgresql.IsExists"
+	var isExists = true
+
+	err := s.db.QueryRowContext(
+		ctx,
+		"SELECT email FROM users WHERE email = $1",
+		email,
+	).Scan(&email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			isExists = false
+			return isExists, fmt.Errorf("%s: %w", op, storage.ErrUserNotFound)
+		}
+
+		return isExists, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return isExists, nil
+}
+
 func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {
 	const op = "storage.postgresql.App"
 	var app models.App

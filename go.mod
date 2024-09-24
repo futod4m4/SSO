@@ -6,7 +6,7 @@ toolchain go1.22.4
 
 require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
-	github.com/futod4m4/protos v0.0.5
+	github.com/futod4m4/protos v0.0.2-0.20240923153228-1a054910a918
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-migrate/migrate/v4 v4.18.1

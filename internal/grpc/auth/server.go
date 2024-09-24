@@ -34,6 +34,7 @@ type Auth interface {
 		dateOfBirth string,
 	) (userID int64, err error)
 	IsAdmin(ctx context.Context, userID int64) (bool, error)
+	IsUserExists(ctx context.Context, email string) (bool, error)
 }
 
 var (
@@ -109,5 +110,21 @@ func (s *serverAPI) IsAdmin(
 
 	return &ssov1.IsAdminResponse{
 		IsAdmin: isAdmin,
+	}, nil
+}
+
+func (s *serverAPI) IsUserExists(
+	ctx context.Context,
+	req *ssov1.IsUserExistsRequest,
+) (*ssov1.IsUserExistsResponse, error) {
+
+	if err := validations.ValidateIsUserExists(req.GetEmail(), validate); err != nil {
+		return nil, err
+	}
+
+	isExists, _ := s.auth.IsUserExists(ctx, req.GetEmail())
+
+	return &ssov1.IsUserExistsResponse{
+		IsExists: isExists,
 	}, nil
 }
