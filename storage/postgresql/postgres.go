@@ -9,10 +9,12 @@ import (
 	"fmt"
 	_ "github.com/gopsql/psql"
 	"github.com/lib/pq"
+	"log/slog"
 )
 
 type Storage struct {
-	db *sql.DB
+	DB  *sql.DB
+	log *slog.Logger
 }
 
 var connectionString = fmt.Sprintf("postgres://%s:@%s:%d/%s",
@@ -25,13 +27,30 @@ var connectionString = fmt.Sprintf("postgres://%s:@%s:%d/%s",
 func New(storagePath string) (*Storage, error) {
 	const op = "storage.postgresql.New"
 
-	// Указываем путь до бд
 	db, err := sql.Open("postgres", storagePath)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return &Storage{db: db}, nil
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &Storage{DB: db}, nil
+}
+
+func (s *Storage) Stop() error {
+	const op = "storage.postgresql.Stop"
+
+	s.log.With(slog.String("op", op)).
+		Info("stopping database")
+
+	if err := s.DB.Close(); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }
 
 // SaveUser saves user to database.
@@ -39,7 +58,7 @@ func (s *Storage) SaveUser(ctx context.Context, email string, passHash []byte, u
 	const op = "storage.postgresql.SaveUser"
 
 	var id int64
-	err := s.db.QueryRowContext(
+	err := s.DB.QueryRowContext(
 		ctx,
 		"INSERT INTO users(email, pass_hash, username, location, birth_date, sex) VALUES($1, $2, $3, $4, $5, $6) RETURNING id",
 		email, passHash, username, location, dateOfBirth, sex,
@@ -65,7 +84,7 @@ func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 
 	var user models.User
 
-	err := s.db.QueryRowContext(
+	err := s.DB.QueryRowContext(
 		ctx,
 		"SELECT id, email, pass_hash, username, location, sex, birth_date FROM users WHERE email = $1",
 		email,
@@ -85,7 +104,7 @@ func (s *Storage) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 	const op = "storage.postgresql.IsAdmin"
 	var isAdmin bool
 
-	err := s.db.QueryRowContext(
+	err := s.DB.QueryRowContext(
 		ctx,
 		"SELECT is_admin FROM users WHERE id = $1",
 		userID,
@@ -105,7 +124,7 @@ func (s *Storage) IsExists(ctx context.Context, email string) (bool, error) {
 	const op = "storage.postgresql.IsExists"
 	var isExists = true
 
-	err := s.db.QueryRowContext(
+	err := s.DB.QueryRowContext(
 		ctx,
 		"SELECT email FROM users WHERE email = $1",
 		email,
@@ -126,7 +145,7 @@ func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {
 	const op = "storage.postgresql.App"
 	var app models.App
 
-	err := s.db.QueryRowContext(
+	err := s.DB.QueryRowContext(
 		ctx,
 		"SELECT id, name, secret FROM apps WHERE id = $1",
 		appID,

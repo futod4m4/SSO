@@ -4,12 +4,14 @@ import (
 	grpcapp "SSO/internal/app/grpc"
 	"SSO/internal/services/auth"
 	"SSO/storage/postgresql"
+	"fmt"
 	"log/slog"
 	"time"
 )
 
 type App struct {
 	GRPCSrv *grpcapp.App
+	Storage *postgresql.Storage
 }
 
 func New(
@@ -29,5 +31,18 @@ func New(
 
 	return &App{
 		GRPCSrv: grpcApp,
+		Storage: storage,
 	}
+}
+
+func (a *App) Stop() error {
+	var err error
+
+	a.GRPCSrv.Stop()
+
+	if err = a.Storage.DB.Close(); err != nil {
+		return fmt.Errorf("failed to close database: %w", err)
+	}
+
+	return nil
 }

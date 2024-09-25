@@ -3,6 +3,7 @@ package main
 import (
 	"SSO/internal/app"
 	"SSO/internal/config"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -35,7 +36,11 @@ func main() {
 
 	log.Info("stopping application", slog.String("signal", sign.String()))
 
-	application.GRPCSrv.Stop()
+	err := application.Stop()
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	log.Info("application stop")
 }
 

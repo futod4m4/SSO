@@ -70,4 +70,5 @@ func (a *App) Stop() {
 		Info("stopping gRPC server", slog.Int("port", a.port))
 
 	a.gRPCServer.GracefulStop()
+
 }
